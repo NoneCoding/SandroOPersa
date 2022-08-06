@@ -17,7 +17,7 @@ def stream(search):
         ],
         "format": "best",
         "noplaylist": True,
-        "default_search": "auto"
+        "default_search": "auto",
     }
     with youtube_dl.YoutubeDL(options) as ydl:
         # Returns the url in the dict that extract_info got
