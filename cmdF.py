@@ -32,6 +32,8 @@ class Music(commands.Cog):
         """
 
         Plays audio from youtube search query
+        
+        param [URL]: URL or youtube search query
 
         """
 
