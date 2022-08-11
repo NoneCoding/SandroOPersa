@@ -1,0 +1,5 @@
+Fazer com que o Sandro não corte áudios no meio
+
+Fazer com que Sandro reproduza qualquer áudio do Youtube
+
+Criar um sistema de queue
