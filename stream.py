@@ -1,18 +1,8 @@
-import youtube_dl
+from pytube import YouTube, Search
 
-
-def stream(search):
-    """
-    Fetches necessary info to stream audio from youtube
-
-    """
-    options = {
-        "prefer_ffmpeg": True,
-        "format": "best",
-        "noplaylist": True,
-        "default_search": "auto",
-        "age_limit": 20
-    }
-    with youtube_dl.YoutubeDL(options) as ydl:
-        # Returns the url in the dict that extract_info got
-        return ydl.extract_info(search, download=False)["entries"]
+# Define function to stream audio from youtube
+def stream(search: str):
+    yt = YouTube(search)
+    audio = yt.streams.filter(only_audio=True).first()
+    
+    return audio.download(filename='sandro.mp3')

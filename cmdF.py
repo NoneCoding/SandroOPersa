@@ -1,6 +1,8 @@
 import nextcord
 from nextcord.ext import commands
+from pytube import YouTube
 from stream import stream
+from os import remove
 
 
 class Music(commands.Cog):
@@ -24,6 +26,7 @@ class Music(commands.Cog):
 
         """
         if ctx.voice_client:
+            remove("sandro.mp3")
             return await ctx.voice_client.disconnect()
 
     @commands.command()
@@ -36,7 +39,7 @@ class Music(commands.Cog):
         param [URL]: URL or youtube search query
 
         """
-
+        yt = YouTube(URL)
         # Check if audio is playing
         if ctx.voice_client:
             return await ctx.send("Já estou em um canal! Miau!")
@@ -52,13 +55,13 @@ class Music(commands.Cog):
             audio_info = stream(URL)
 
             audio_source = nextcord.PCMVolumeTransformer(
-                nextcord.FFmpegPCMAudio(audio_info[0]["formats"][0]["url"])
+                nextcord.FFmpegPCMAudio(audio_info)
             )
 
             audio_source.volume = 1
 
             ctx.voice_client.play(audio_source)
-            await ctx.send("Tocando: {}".format(audio_info[0]["title"]))
+            await ctx.send("Tocando: {}".format(yt.title))
 
     @commands.command()
     async def stop(self, ctx):
@@ -68,8 +71,10 @@ class Music(commands.Cog):
         """
         if ctx.voice_client.is_playing():
             await ctx.send("Saindo. Miau!")
+            remove("sandro.mp3")
             return await ctx.voice_client.disconnect()
-        ctx.send("Nada pra parar! Miau!")
+
+        await ctx.send("Nada pra parar! Miau!")
 
     @commands.command()
     async def pause(self, ctx):
