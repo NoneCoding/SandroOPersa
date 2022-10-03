@@ -52,7 +52,7 @@ class Music(commands.Cog):
         async with ctx.typing():
             await ctx.author.voice.channel.connect()
 
-            audio_info = stream(URL)
+            audio_info = stream(URL)[1]
 
             audio_source = nextcord.PCMVolumeTransformer(
                 nextcord.FFmpegPCMAudio(audio_info)
@@ -61,7 +61,7 @@ class Music(commands.Cog):
             audio_source.volume = 1
 
             ctx.voice_client.play(audio_source)
-            await ctx.send("Tocando: {}".format(yt.title))
+            await ctx.send("Tocando: {}".format(stream(URL)[0]))
 
     @commands.command()
     async def stop(self, ctx):
