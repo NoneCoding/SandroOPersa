@@ -39,7 +39,6 @@ class Music(commands.Cog):
         param [URL]: URL or youtube search query
 
         """
-        yt = YouTube(URL)
         # Check if audio is playing
         if ctx.voice_client:
             return await ctx.send("Já estou em um canal! Miau!")
