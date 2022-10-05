@@ -8,10 +8,11 @@ def stream(search: str):
         audio = yt.streams.filter(only_audio=True).first()
         
         
-        return audio.download(filename='sandro.mp3'), audio.title
+        return audio.download(filename='sandro.mp3')
     else:
         sc = Search(search)
         yt = sc.results[1]
         audio = yt.streams.filter(only_audio=True).first()
         
         return audio.download(filename='sandro.mp3'), audio.title
+
