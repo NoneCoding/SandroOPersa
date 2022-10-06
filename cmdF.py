@@ -131,7 +131,7 @@ class Music(commands.Cog):
         param [pos]: position of element to remove from queue
         
         """
-        Music.line.remove(Music.line[pos])
+        Music.line.remove(Music.line[int(pos)])
         return
     
     @commands.command()
