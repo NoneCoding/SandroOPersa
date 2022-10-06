@@ -1,9 +1,11 @@
 import nextcord
 from nextcord.ext import commands
+from pytube import YouTube
 from stream import stream
 from os import remove
 from collections import deque
 from asyncio import sleep
+
 
 
 class Music(commands.Cog):

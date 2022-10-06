@@ -3,7 +3,6 @@ from pytube import YouTube, Search
 
 # Define function to stream audio from youtube
 
-
 def stream(search: str):
     if re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", search):
         yt = YouTube(search)
