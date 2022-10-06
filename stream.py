@@ -9,10 +9,11 @@ def stream(search: str):
         yt = YouTube(search)
         audio = yt.streams.filter(only_audio=True).first()
 
-        return audio.download(filename='sandro.mp3')
+        return audio.download(filename='sandro.mp3'), audio.title, yt.length
     else:
         sc = Search(search)
-        yt = sc.results[1]
-        audio = yt.streams.filter(only_audio=True).first()
+        yt_s = sc.results[1]
+        print(yt_s)
+        audio = yt_s.streams.filter(only_audio=True).first()
 
-        return audio.download(filename='sandro.mp3'), audio.title
+        return audio.download(filename='sandro.mp3'), audio.title, yt_s.length
