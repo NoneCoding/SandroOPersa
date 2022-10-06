@@ -16,3 +16,9 @@ Para entrar em um canal de voz: .join
 
 Para sair de um canal de voz: .leave
 
+Para adicionar uma música à fila: .queue + parâmetro de pesquisa do youtube
+
+Para remover elemento da fila: .remove + posição do elemento
+
+Para limpar fila: .clear
+
