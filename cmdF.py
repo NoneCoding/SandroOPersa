@@ -1,5 +1,5 @@
 import nextcord
-from nextcord.ext import commands
+from nextcord.ext import tasks, commands
 from pytube import YouTube
 from stream import stream
 from os import remove
@@ -47,10 +47,6 @@ class Music(commands.Cog):
         param [URL]: URL or youtube search query
 
         """
-        # Check if audio is playing
-        if ctx.voice_client:
-            Music.line.append(URL)
-            return
 
         Music.line.append(URL)
         
@@ -60,7 +56,8 @@ class Music(commands.Cog):
 
         # If not, create voice client and join channel
         async with ctx.typing():
-            await ctx.author.voice.channel.connect()
+            if not ctx.voice_client:
+                await ctx.author.voice.channel.connect()
             
             # Play while queue is not empty
             while len(Music.line) > 0:
@@ -73,10 +70,11 @@ class Music(commands.Cog):
                 audio_source.volume = 1
 
                 ctx.voice_client.play(audio_source)
-                await ctx.send("Tocando: {}".format(audio_info[1]))
+                await ctx.send("Tocando: {}".format(audio_info[1]), delete_after=30.0)
             
                 await sleep(audio_info[2])
-                Music.line.popleft()
+                if Music.line[0] == URL:
+                    Music.line.popleft()
 
     @commands.command()
     async def stop(self, ctx):
@@ -85,12 +83,12 @@ class Music(commands.Cog):
 
         """
         if ctx.voice_client:
-            await ctx.send("Limpando a fila e saindo. Miau!")
+            await ctx.send("Limpando a fila e saindo. Miau!", delete_after=5.0)
             remove("sandro.mp3")
             Music.line.clear()
             return await ctx.voice_client.disconnect()
 
-        await ctx.send("Nada pra parar! Miau!")
+        await ctx.send("Nada pra parar! Miau!", delete_after=10.0)
 
     @commands.command()
     async def pause(self, ctx):
@@ -100,7 +98,7 @@ class Music(commands.Cog):
         """
         if ctx.voice_client:
             return ctx.voice_client.pause()
-        await ctx.send("Não tem nada tocando! Miau!")
+        await ctx.send("Não tem nada tocando! Miau!", delete_after=10.0)
 
     @commands.command()
     async def resume(self, ctx):
@@ -110,7 +108,7 @@ class Music(commands.Cog):
         """
         if ctx.voice_client.is_paused():
             return ctx.voice_client.resume()
-        await ctx.send("Não tem nada tocando! Miau!")
+        await ctx.send("Não tem nada tocando! Miau!", delete_after=5.0)
         
     @commands.command()
     async def queue(self, ctx, *, URL):
@@ -145,7 +143,7 @@ class Music(commands.Cog):
         for i in range(len(Music.line)):
             lista += f"\n\n{i}. {Music.line[i]}"
         
-        return await ctx.send(f"``` {lista} ```")
+        return await ctx.send(f"``` {lista} ```", delete_after=30.0)
     
     @commands.command()
     async def clear(self, ctx):
@@ -156,3 +154,33 @@ class Music(commands.Cog):
         
         Music.line.clear()
         return
+    
+    @commands.command()
+    async def skip(self, ctx):
+        """
+        Skips one song
+        
+        """
+        # Stop current audio, if any
+        if ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
+            Music.line.popleft()
+            
+            async with ctx.typing():
+                # Play while queue is not empty
+                while len(Music.line) > 0:
+                    audio_info = stream(Music.line[0])
+                    
+                    audio_source = nextcord.PCMVolumeTransformer(
+                        nextcord.FFmpegPCMAudio(audio_info[0])
+                    )
+
+                    audio_source.volume = 1
+
+                    ctx.voice_client.play(audio_source)
+                    await ctx.send("Tocando: {}".format(audio_info[1]), delete_after=30.0)
+                
+                    await sleep(audio_info[2])
+                    if len(Music.line) > 0:
+                        Music.line.popleft()
+        
