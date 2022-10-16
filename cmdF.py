@@ -84,7 +84,7 @@ class Music(commands.Cog):
         Stops playing audio and leaves channel
 
         """
-        if ctx.voice_client.is_playing():
+        if ctx.voice_client:
             await ctx.send("Limpando a fila e saindo. Miau!")
             remove("sandro.mp3")
             Music.line.clear()
