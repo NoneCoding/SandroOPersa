@@ -1,11 +1,10 @@
 import nextcord
 from nextcord.ext import tasks, commands
 from pytube import YouTube
-from stream import stream
+from stream import Stream
 from os import remove
 from collections import deque
 from asyncio import sleep
-
 
 
 class Music(commands.Cog):
@@ -14,6 +13,32 @@ class Music(commands.Cog):
 
     # Create empty list for storing queued up audios
     line = deque([])
+
+    @staticmethod
+    async def stream(ctx):
+        # If not, create voice client and join channel
+        async with ctx.typing():
+            if not ctx.voice_client:
+                await ctx.author.voice.channel.connect()
+
+            # Play while queue is not empty
+            while len(Music.line) > 0:
+                audio_info = Stream.youtube(Music.line[0])
+
+                audio_source = nextcord.PCMVolumeTransformer(
+                    nextcord.FFmpegPCMAudio(audio_info[0])
+                )
+
+                audio_source.volume = 1
+                try:
+                    ctx.voice_client.play(audio_source)
+                    await ctx.send(
+                        "Tocando: {}".format(audio_info[1]), delete_after=500.0
+                    )
+                except:
+                    pass
+
+                await sleep(audio_info[2])
 
     @commands.command()
     async def join(self, ctx):
@@ -49,32 +74,15 @@ class Music(commands.Cog):
         """
 
         Music.line.append(URL)
-        
+
         await ctx.guild.change_voice_state(
             channel=ctx.author.voice.channel, self_deaf=True
         )
 
-        # If not, create voice client and join channel
-        async with ctx.typing():
-            if not ctx.voice_client:
-                await ctx.author.voice.channel.connect()
-            
-            # Play while queue is not empty
-            while len(Music.line) > 0:
-                audio_info = stream(Music.line[0])
-                
-                audio_source = nextcord.PCMVolumeTransformer(
-                    nextcord.FFmpegPCMAudio(audio_info[0])
-                )
+        await Music.stream(ctx)
 
-                audio_source.volume = 1
-
-                ctx.voice_client.play(audio_source)
-                await ctx.send("Tocando: {}".format(audio_info[1]), delete_after=30.0)
-            
-                await sleep(audio_info[2])
-                if Music.line[0] == URL:
-                    Music.line.popleft()
+        if Music.line[0] == URL:
+            Music.line.popleft()
 
     @commands.command()
     async def stop(self, ctx):
@@ -109,7 +117,7 @@ class Music(commands.Cog):
         if ctx.voice_client.is_paused():
             return ctx.voice_client.resume()
         await ctx.send("Não tem nada tocando! Miau!", delete_after=5.0)
-        
+
     @commands.command()
     async def queue(self, ctx, *, URL):
         """
@@ -119,8 +127,10 @@ class Music(commands.Cog):
         
         """
         Music.line.append(URL)
-        return await ctx.send(f"Adicionando música à fila. Sua música está na posição {len(Music.line)}! Miau!")
-    
+        return await ctx.send(
+            f"Adicionando música à fila. Sua música está na posição {len(Music.line)}! Miau!"
+        )
+
     @commands.command()
     async def remove(self, ctx, pos):
         """
@@ -131,7 +141,7 @@ class Music(commands.Cog):
         """
         Music.line.remove(Music.line[int(pos)])
         return
-    
+
     @commands.command()
     async def list_all(self, ctx):
         """
@@ -139,22 +149,22 @@ class Music(commands.Cog):
         
         """
         lista = "Fila: "
-        
+
         for i in range(len(Music.line)):
             lista += f"\n\n{i}. {Music.line[i]}"
-        
+
         return await ctx.send(f"``` {lista} ```", delete_after=30.0)
-    
+
     @commands.command()
     async def clear(self, ctx):
         """
         Clear the queue
         
         """
-        
+
         Music.line.clear()
         return
-    
+
     @commands.command()
     async def skip(self, ctx):
         """
@@ -165,22 +175,8 @@ class Music(commands.Cog):
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
             Music.line.popleft()
-            
-            async with ctx.typing():
-                # Play while queue is not empty
-                while len(Music.line) > 0:
-                    audio_info = stream(Music.line[0])
-                    
-                    audio_source = nextcord.PCMVolumeTransformer(
-                        nextcord.FFmpegPCMAudio(audio_info[0])
-                    )
 
-                    audio_source.volume = 1
+            await Music.stream(ctx)
 
-                    ctx.voice_client.play(audio_source)
-                    await ctx.send("Tocando: {}".format(audio_info[1]), delete_after=30.0)
-                
-                    await sleep(audio_info[2])
-                    if len(Music.line) > 0:
-                        Music.line.popleft()
-        
+            if len(Music.line) > 0:
+                Music.line.popleft()
