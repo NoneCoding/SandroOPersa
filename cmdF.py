@@ -35,6 +35,7 @@ class Music(commands.Cog):
                     await ctx.send(
                         "Tocando: {}".format(audio_info[1]), delete_after=500.0
                     )
+                    print("Tocando!")
                 except:
                     pass
 
@@ -91,12 +92,12 @@ class Music(commands.Cog):
 
         """
         if ctx.voice_client:
-            await ctx.send("Limpando a fila e saindo. Miau!", delete_after=5.0)
+            await ctx.send("Limpando a fila e saindo. Miau!", delete_after=500.0)
             remove("sandro.mp3")
             Music.line.clear()
             return await ctx.voice_client.disconnect()
 
-        await ctx.send("Nada pra parar! Miau!", delete_after=10.0)
+        await ctx.send("Nada pra parar! Miau!", delete_after=500.0)
 
     @commands.command()
     async def pause(self, ctx):
@@ -116,7 +117,7 @@ class Music(commands.Cog):
         """
         if ctx.voice_client.is_paused():
             return ctx.voice_client.resume()
-        await ctx.send("Não tem nada tocando! Miau!", delete_after=5.0)
+        await ctx.send("Não tem nada tocando! Miau!", delete_after=500.0)
 
     @commands.command()
     async def queue(self, ctx, *, URL):
@@ -128,7 +129,7 @@ class Music(commands.Cog):
         """
         Music.line.append(URL)
         return await ctx.send(
-            f"Adicionando música à fila. Sua música está na posição {len(Music.line)}! Miau!"
+            f"Adicionando música à fila. Sua música está na posição {len(Music.line)}! Miau!", delete_after=500.0
         )
 
     @commands.command()
@@ -153,7 +154,7 @@ class Music(commands.Cog):
         for i in range(len(Music.line)):
             lista += f"\n\n{i}. {Music.line[i]}"
 
-        return await ctx.send(f"``` {lista} ```", delete_after=30.0)
+        return await ctx.send(f"``` {lista} ```", delete_after=500.0)
 
     @commands.command()
     async def clear(self, ctx):
@@ -180,3 +181,32 @@ class Music(commands.Cog):
 
             if len(Music.line) > 0:
                 Music.line.popleft()
+
+    @commands.command()
+    async def loop(self, ctx):
+        """
+        Loops over the same audio until .skip is called
+        
+        """
+        await ctx.send("Começando loop, use .skip para sair. Miau!", delete_after=500.0)
+        while True:
+            # Listen for skip command
+            msg = await self.bot.wait_for("message")
+
+            Music.line.appendleft(Music.line[0])
+            
+            if msg == ".skip":
+                await ctx.send("Parando loop! Miau!", delete_after=500.0)
+                return await ctx.invoke(self.bot.get_command('skip'))
+            
+            if not ctx.voice_client.is_playing():
+                await Music.stream(ctx)
+            Music.line.popleft()
+    
+    
+    @play.error
+    async def play_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            print(".play não recebeu os devidos argumentos, enviando mensagem para usuário:")
+            await ctx.send("Miau? Preciso do nome da música, não consigo adivinhar!", delete_after=120.0)
+            print("Enviada. Continuando!")
