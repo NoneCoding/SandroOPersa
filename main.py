@@ -1,6 +1,6 @@
 import nextcord
 from nextcord.ext import commands
-from cmdF import Music
+from sandrocmd import Music
 import os
 from dotenv import load_dotenv
 
