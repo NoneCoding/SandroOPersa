@@ -82,7 +82,8 @@ class Music(commands.Cog):
 
         await Music.stream(ctx)
 
-        Music.line.popleft()
+        if Music.line[0] == URL:
+            Music.line.popleft()
 
     @commands.command()
     async def stop(self, ctx):
